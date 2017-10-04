@@ -1,9 +1,20 @@
 <?php
-if ( ( is_single() || is_page() ) && 'et_full_width_page' === get_post_meta( get_queried_object_id(), '_et_pb_page_layout', true ) )
-	return;
+/**
+ * The sidebar containing the main widget area
+ *
+ * @link https://developer.wordpress.org/themes/basics/template-files/#template-partials
+ *
+ * @package WordPress
+ * @subpackage Twenty_Seventeen
+ * @since 1.0
+ * @version 1.0
+ */
 
-if ( is_active_sidebar( 'sidebar-1' ) ) : ?>
-	<div id="sidebar">
-		<?php dynamic_sidebar( 'sidebar-1' ); ?>
-	</div> <!-- end #sidebar -->
-<?php endif; ?>
+if ( ! is_active_sidebar( 'sidebar-1' ) ) {
+	return;
+}
+?>
+
+<aside id="secondary" class="widget-area" role="complementary">
+	<?php dynamic_sidebar( 'sidebar-1' ); ?>
+</aside><!-- #secondary -->

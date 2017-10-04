@@ -1,60 +1,82 @@
 <?php
-	if ( post_password_required() ) : ?>
+/**
+ * The template for displaying comments
+ *
+ * This is the template that displays the area of the page that contains both the current comments
+ * and the comment form.
+ *
+ * @link https://codex.wordpress.org/Template_Hierarchy
+ *
+ * @package WordPress
+ * @subpackage Twenty_Seventeen
+ * @since 1.0
+ * @version 1.0
+ */
 
-<p class="nocomments container"><?php esc_html_e( 'This post is password protected. Enter the password to view comments.', 'Divi' ); ?></p>
-<?php
-		return;
-	endif;
+/*
+ * If the current post is protected by a password and
+ * the visitor has not yet entered the password we will
+ * return early without loading the comments.
+ */
+if ( post_password_required() ) {
+	return;
+}
 ?>
-<!-- You can start editing here. -->
 
-<section id="comment-wrap">
-<?php if ( have_comments() && ! empty( $comments_by_type['comment'] ) ) : ?>
-	<h1 id="comments" class="page_title"><?php comments_number( esc_html__( '0 Comments', 'Divi' ), esc_html__( '1 Comment', 'Divi' ), '% ' . esc_html__( 'Comments', 'Divi' ) ); ?></h1>
-<?php endif; ?>
-	<?php if ( have_comments() ) : ?>
-		<?php if ( get_comment_pages_count() > 1 && get_option( 'page_comments' ) ) : // Are there comments to navigate through? ?>
-			<div class="comment_navigation_top clearfix">
-				<div class="nav-previous"><?php previous_comments_link( et_get_safe_localization( __( '<span class="meta-nav">&larr;</span> Older Comments', 'Divi' ) ) ); ?></div>
-				<div class="nav-next"><?php next_comments_link( et_get_safe_localization( __( 'Newer Comments <span class="meta-nav">&rarr;</span>', 'Divi' ) ) ); ?></div>
-			</div> <!-- .navigation -->
-		<?php endif; // check for comment navigation ?>
+<div id="comments" class="comments-area">
 
-		<?php if ( ! empty($comments_by_type['comment']) ) : ?>
-			<ol class="commentlist clearfix">
-				<?php wp_list_comments( array('type'=>'comment','callback'=>'et_custom_comments_display') ); ?>
-			</ol>
-		<?php endif; ?>
+	<?php
+	// You can start editing here -- including this comment!
+	if ( have_comments() ) : ?>
+		<h2 class="comments-title">
+			<?php
+			$comments_number = get_comments_number();
+			if ( '1' === $comments_number ) {
+				/* translators: %s: post title */
+				printf( _x( 'One Reply to &ldquo;%s&rdquo;', 'comments title', 'twentyseventeen' ), get_the_title() );
+			} else {
+				printf(
+					/* translators: 1: number of comments, 2: post title */
+					_nx(
+						'%1$s Reply to &ldquo;%2$s&rdquo;',
+						'%1$s Replies to &ldquo;%2$s&rdquo;',
+						$comments_number,
+						'comments title',
+						'twentyseventeen'
+					),
+					number_format_i18n( $comments_number ),
+					get_the_title()
+				);
+			}
+			?>
+		</h2>
 
-		<?php if ( get_comment_pages_count() > 1 && get_option( 'page_comments' ) ) : // Are there comments to navigate through? ?>
-			<div class="comment_navigation_bottom clearfix">
-				<div class="nav-previous"><?php previous_comments_link( et_get_safe_localization( __( '<span class="meta-nav">&larr;</span> Older Comments', 'Divi' ) ) ); ?></div>
-				<div class="nav-next"><?php next_comments_link( et_get_safe_localization( __( 'Newer Comments <span class="meta-nav">&rarr;</span>', 'Divi' ) ) ); ?></div>
-			</div> <!-- .navigation -->
-		<?php endif; // check for comment navigation ?>
+		<ol class="comment-list">
+			<?php
+				wp_list_comments( array(
+					'avatar_size' => 100,
+					'style'       => 'ol',
+					'short_ping'  => true,
+					'reply_text'  => twentyseventeen_get_svg( array( 'icon' => 'mail-reply' ) ) . __( 'Reply', 'twentyseventeen' ),
+				) );
+			?>
+		</ol>
 
-		<?php if ( ! empty($comments_by_type['pings']) ) : ?>
-			<div id="trackbacks">
-				<h3 id="trackbacks-title"><?php esc_html_e('Trackbacks/Pingbacks','Divi'); ?></h3>
-				<ol class="pinglist">
-					<?php wp_list_comments('type=pings&callback=et_list_pings'); ?>
-				</ol>
-			</div>
-		<?php endif; ?>
-	<?php else : // this is displayed if there are no comments so far ?>
-	   <div id="comment-section" class="nocomments">
-		  <?php if ('open' == $post->comment_status) : ?>
-			 <!-- If comments are open, but there are no comments. -->
+		<?php the_comments_pagination( array(
+			'prev_text' => twentyseventeen_get_svg( array( 'icon' => 'arrow-left' ) ) . '<span class="screen-reader-text">' . __( 'Previous', 'twentyseventeen' ) . '</span>',
+			'next_text' => '<span class="screen-reader-text">' . __( 'Next', 'twentyseventeen' ) . '</span>' . twentyseventeen_get_svg( array( 'icon' => 'arrow-right' ) ),
+		) );
 
-		  <?php else : // comments are closed ?>
-			 <!-- If comments are closed. -->
+	endif; // Check for have_comments().
 
-		  <?php endif; ?>
-	   </div>
-	<?php endif; ?>
-	<?php if ('open' == $post->comment_status) : ?>
-		<?php comment_form( array('label_submit' => esc_attr__( 'Submit Comment', 'Divi' ), 'title_reply' => '<span>' . esc_attr__( 'Submit a Comment', 'Divi' ) . '</span>', 'title_reply_to' => esc_attr__( 'Leave a Reply to %s', 'Divi' ), 'class_submit' => 'submit et_pb_button' ) ); ?>
-	<?php else: ?>
+	// If comments are closed and there are comments, let's leave a little note, shall we?
+	if ( ! comments_open() && get_comments_number() && post_type_supports( get_post_type(), 'comments' ) ) : ?>
 
-	<?php endif; // if you delete this the sky will fall on your head ?>
-</section>
+		<p class="no-comments"><?php _e( 'Comments are closed.', 'twentyseventeen' ); ?></p>
+	<?php
+	endif;
+
+	comment_form();
+	?>
+
+</div><!-- #comments -->

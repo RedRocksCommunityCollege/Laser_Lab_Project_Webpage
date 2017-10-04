@@ -1,80 +1,67 @@
-<?php get_header(); ?>
+<?php
+/**
+ * The main template file
+ *
+ * This is the most generic template file in a WordPress theme
+ * and one of the two required files for a theme (the other being style.css).
+ * It is used to display a page when nothing more specific matches a query.
+ * E.g., it puts together the home page when no home.php file exists.
+ *
+ * @link https://codex.wordpress.org/Template_Hierarchy
+ *
+ * @package WordPress
+ * @subpackage Twenty_Seventeen
+ * @since 1.0
+ * @version 1.0
+ */
 
-<div id="main-content">
-	<div class="container">
-		<div id="content-area" class="clearfix">
-			<div id="left-area">
-		<?php
-			if ( have_posts() ) :
-				while ( have_posts() ) : the_post();
-					$post_format = et_pb_post_format(); ?>
+get_header(); ?>
 
-					<article id="post-<?php the_ID(); ?>" <?php post_class( 'et_pb_post' ); ?>>
+<div class="wrap">
+	<?php if ( is_home() && ! is_front_page() ) : ?>
+		<header class="page-header">
+			<h1 class="page-title"><?php single_post_title(); ?></h1>
+		</header>
+	<?php else : ?>
+	<header class="page-header">
+		<h2 class="page-title"><?php _e( 'Posts', 'twentyseventeen' ); ?></h2>
+	</header>
+	<?php endif; ?>
 
-				<?php
-					$thumb = '';
+	<div id="primary" class="content-area">
+		<main id="main" class="site-main" role="main">
 
-					$width = (int) apply_filters( 'et_pb_index_blog_image_width', 1080 );
-
-					$height = (int) apply_filters( 'et_pb_index_blog_image_height', 675 );
-					$classtext = 'et_pb_post_main_image';
-					$titletext = get_the_title();
-					$thumbnail = get_thumbnail( $width, $height, $classtext, $titletext, $titletext, false, 'Blogimage' );
-					$thumb = $thumbnail["thumb"];
-
-					et_divi_post_format_content();
-
-					if ( ! in_array( $post_format, array( 'link', 'audio', 'quote' ) ) ) {
-						if ( 'video' === $post_format && false !== ( $first_video = et_get_first_video() ) ) :
-							printf(
-								'<div class="et_main_video_container">
-									%1$s
-								</div>',
-								$first_video
-							);
-						elseif ( ! in_array( $post_format, array( 'gallery' ) ) && 'on' === et_get_option( 'divi_thumbnails_index', 'on' ) && '' !== $thumb ) : ?>
-							<a href="<?php the_permalink(); ?>">
-								<?php print_thumbnail( $thumb, $thumbnail["use_timthumb"], $titletext, $width, $height ); ?>
-							</a>
-					<?php
-						elseif ( 'gallery' === $post_format ) :
-							et_pb_gallery_images();
-						endif;
-					} ?>
-
-				<?php if ( ! in_array( $post_format, array( 'link', 'audio', 'quote' ) ) ) : ?>
-					<?php if ( ! in_array( $post_format, array( 'link', 'audio' ) ) ) : ?>
-						<h2 class="entry-title"><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h2>
-					<?php endif; ?>
-
-					<?php
-						et_divi_post_meta();
-
-						if ( 'on' !== et_get_option( 'divi_blog_style', 'false' ) || ( is_search() && ( 'on' === get_post_meta( get_the_ID(), '_et_pb_use_builder', true ) ) ) ) {
-							truncate_post( 270 );
-						} else {
-							the_content();
-						}
-					?>
-				<?php endif; ?>
-
-					</article> <!-- .et_pb_post -->
 			<?php
-					endwhile;
+			if ( have_posts() ) :
 
-					if ( function_exists( 'wp_pagenavi' ) )
-						wp_pagenavi();
-					else
-						get_template_part( 'includes/navigation', 'index' );
-				else :
-					get_template_part( 'includes/no-results', 'index' );
-				endif;
+				/* Start the Loop */
+				while ( have_posts() ) : the_post();
+
+					/*
+					 * Include the Post-Format-specific template for the content.
+					 * If you want to override this in a child theme, then include a file
+					 * called content-___.php (where ___ is the Post Format name) and that will be used instead.
+					 */
+					get_template_part( 'template-parts/post/content', get_post_format() );
+
+				endwhile;
+
+				the_posts_pagination( array(
+					'prev_text' => twentyseventeen_get_svg( array( 'icon' => 'arrow-left' ) ) . '<span class="screen-reader-text">' . __( 'Previous page', 'twentyseventeen' ) . '</span>',
+					'next_text' => '<span class="screen-reader-text">' . __( 'Next page', 'twentyseventeen' ) . '</span>' . twentyseventeen_get_svg( array( 'icon' => 'arrow-right' ) ),
+					'before_page_number' => '<span class="meta-nav screen-reader-text">' . __( 'Page', 'twentyseventeen' ) . ' </span>',
+				) );
+
+			else :
+
+				get_template_part( 'template-parts/post/content', 'none' );
+
+			endif;
 			?>
-			</div> <!-- #left-area -->
 
-			<?php get_sidebar(); ?>
-		</div> <!-- #content-area -->
-	</div> <!-- .container -->
-</div> <!-- #main-content -->
+		</main><!-- #main -->
+	</div><!-- #primary -->
+	<?php get_sidebar(); ?>
+</div><!-- .wrap -->
 
-<?php get_footer(); ?>
+<?php get_footer();
